@@ -1,0 +1,47 @@
+from dorothy import Dorothy 
+from cv2 import ellipse
+import numpy as np
+
+dot = Dorothy() 
+
+class MySketch:
+    def __init__(self):
+        dot.start_loop(self.setup, self.draw) 
+
+    def setup(self):
+        print("setup")
+        self.frame_count = 0  # Initialise the frame counter
+
+    def draw(self):
+        try:
+            dot.background(dot.white)
+            center = (dot.width // 2, dot.height // 2)
+            axes = (dot.width // 3, dot.height // 3)  # Resize the ellipse
+            angle = 0
+            start_angle = 0
+            end_angle = 18  # The angle of each sector is 18 degrees
+            for i in range(20):
+                if self.is_mouse_in_segment(center, axes, angle, start_angle, end_angle):
+                    ellipse(dot.canvas, center, axes, angle, start_angle, end_angle, dot.yellow, -1)
+                else:
+                    ellipse(dot.canvas, center, axes, angle, start_angle, end_angle, dot.white, -1)
+                start_angle += 18
+                end_angle += 18
+
+            self.frame_count += 1
+            if self.frame_count > 100:  # Exit loop after 100 frames
+                dot.no_loop()
+
+        except KeyboardInterrupt:
+            print("Process interrupted by user")
+            dot.no_loop()
+
+    def is_mouse_in_segment(self, center, axes, angle, start_angle, end_angle):
+        mouse_x = dot.mouse_x - center[0]
+        mouse_y = dot.mouse_y - center[1]
+        mouse_angle = np.degrees(np.arctan2(mouse_y, mouse_x))
+        if mouse_angle < 0:
+            mouse_angle += 360
+        return start_angle <= mouse_angle < end_angle
+
+MySketch()
